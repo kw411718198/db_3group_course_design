@@ -44,7 +44,7 @@ FPTree的访问速度能够与DRAM相当,对不同的SCM设备的延迟有很好
 
 ### 项目结构
 
-![FPTreeDB](/home/kong/Desktop/2019-DBMS-Project/asset/FPTreeDB.png)
+![FPTreeDB](/asset/FPTreeDB.png)
 
 ### 项目目录说明
 
