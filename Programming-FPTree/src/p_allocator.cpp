@@ -121,7 +121,7 @@ bool PAllocator::freeLeaf(PPointer p) {
 // persist the catalog file in NVM/SSD
 bool PAllocator::persistCatalog() {
     // TODO
-    const void *addr, size_t len;
+   // const void *addr, size_t len;
     for(auto it=freeList.begin();it!=freeList.end();it++){
        // if(*it== p)
         pmem_persist(getLeafPmemAddr(*it), it->offset);
