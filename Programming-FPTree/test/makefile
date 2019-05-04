@@ -93,18 +93,22 @@ libgtest_main.a : gtest-all.o gtest_main.o
 # ===============================TODO: all below=================================
 fptree.o :
 
-utility.o : 
+utility.o : $(USER_DIR)/utility.cpp $(USER_HEADER_DIR)/utility/clhash.h $(USER_HEADER_DIR)/utility/utility.h
+	$(CXX) $(CXXFLAGS)  -L. -lgtest_main -lgtest -o $@ 
 
-p_allocator.o :
+
+p_allocator.o :$(USER_DIR)/p_allocator.cpp
+	$(CXX) $(CXXFLAGS)  -L. -lgtest_main -lgtest -o $@ 
 
 clhash.o : $(USER_DIR)/clhash.c $(USER_HEADER_DIR)/utility/clhash.h
 	$(CC) $(CFLAGS) -c $(USER_DIR)/clhash.c -I $(USER_HEADER_DIR)
 
 # utility test
-$(UTILITY_TEST) :
+$(UTILITY_TEST) : utility_test.o p_allocator.o utility.o clhash.o
+	$(CXX) $(CXXFLAGS)  -L. -lgtest -lgtest_main $^ -o $@ 
 
-utility_test.o :
-
+utility_test.o :utility_test.cpp $(BIN)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<  -o $@ -I $(USER_HEADER_DIR)
 # fptree test
 $(FPTREE_TEST) :
 
