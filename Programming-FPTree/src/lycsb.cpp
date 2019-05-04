@@ -25,7 +25,7 @@ int main()
     leveldb::Status status = leveldb::DB::Open(options, "./testdb", &db);
     assert(status.ok());
 
-    uint64_t inserted = 0, queried = 0, t = 0;
+    int inserted = 0, queried = 0, t = 0;
     string* key = new string[2200000]; // the key and value are same
     bool* ifInsert = new bool[2200000]; // the operation is insertion or not
 	//FILE *ycsb_load, *ycsb_run; // the files that store the ycsb operations
@@ -38,21 +38,21 @@ int main()
     // TODO: read the ycsb_load and store
     ifstream ycsb_load(load);
     if (! ycsb_load.is_open()) {
-	printf("fail to open file\n");
+	    printf("fail to open file\n"); // fail to open if the file doesn't exist
         return -1;
     }
     
     string operation;
 
     while (!ycsb_load.eof()) {
-        ycsb_load >> operation;
-        if (operation == "INSERT")  
+        ycsb_load >> operation; //read the operation
+        if (operation == "INSERT")  // check whether it is an insertion
         {
             ifInsert[queried] = true;
             inserted ++;
         }
         else ifInsert[queried] = false;
-        ycsb_load >> key[queried];
+        ycsb_load >> key[queried]; // read the key(value is the same as key)
         queried ++;
     }
 
@@ -62,31 +62,33 @@ int main()
     // TODO: load the workload in LevelDB
     string k, v;
     for (int i = 0; i < queried; i ++) {
-        status = db->Put(leveldb::WriteOptions(), k, k);
+        status = db->Put(leveldb::WriteOptions(), k, k); // insert the item
         assert(status.ok());
     }
 
     clock_gettime(CLOCK_MONOTONIC, &finish);
 	single_time = (finish.tv_sec - start.tv_sec) * 1000000000.0 + (finish.tv_nsec - start.tv_nsec);
 
-    printf("Load phase finishes: %I64u items are inserted \n", inserted);
+    printf("Load phase finishes: %d items are inserted \n", inserted);
     printf("Load phase used time: %fs\n", single_time / 1000000000.0);
     printf("Load phase single insert time: %fns\n", single_time / inserted);
 
 	int operation_num = 0;
-    inserted = 0;		
+    inserted = 0;
+		
 
     string * operations = new string[2200000];
     // TODO:read the ycsb_run and store
     ifstream ycsb_run(run);
     if (! ycsb_run.is_open()) {
-	printf("fail to open file\n");
+	    printf("fail to open file\n"); // fail to open if the file doesn't exist
         return -1;
     }
     
     while (! ycsb_run.eof()) {
-        operations[operation_num] = operation;
-        ycsb_run >> key[operation_num];
+	ycsb_run >> operation;
+        operations[operation_num] = operation; // read the operation
+        ycsb_run >> key[operation_num]; // read the key(value is the same as key)
         operation_num ++;
     }
 
@@ -96,19 +98,20 @@ int main()
     string temValue;
     for (int i = 0; i < operation_num; i ++) {
         if (operations[i] == "READ") {
-            status = db->Get(leveldb::ReadOptions(), key[i], &temValue);
+            status = db->Get(leveldb::ReadOptions(), key[i], &temValue); // load from db
         }
         else if (operations[i] == "UPDATE") {
-            status = db->Delete(leveldb::WriteOptions(), key[i]);
+            status = db->Delete(leveldb::WriteOptions(), key[i]); // delete
             if (status.ok()) {
-                db->Put(leveldb::WriteOptions(), key[i], key[i]);
+                db->Put(leveldb::WriteOptions(), key[i], key[i]); // put the new value according to the given key
             }
+		    inserted ++;
         }
     }
 
 	clock_gettime(CLOCK_MONOTONIC, &finish);
 	single_time = (finish.tv_sec - start.tv_sec) + (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    printf("Run phase finishes: %I64u/%I64u items are inserted/searched\n", operation_num - inserted, inserted);
+    printf("Run phase finishes: %d/%d items are inserted/searched\n", operation_num - inserted, inserted);
     printf("Run phase throughput: %f operations per second \n", operation_num/single_time);	
     return 0;
 }
