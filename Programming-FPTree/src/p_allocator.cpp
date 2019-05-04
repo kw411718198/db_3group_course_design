@@ -1,3 +1,4 @@
+#include<string>
 #include"utility/p_allocator.h"
 #define LAYOUT_NAME "my_layout"
 #include<iostream>
@@ -138,14 +139,11 @@ bool PAllocator::newLeafGroup() {
     //
     //string s = maxFileId;
     maxFileId++;
-    uint64_t max = maxFiled;
-    string fileName;
-    ostringstream convert;
-    convert << max;
-    fielName = convert.str();
+    uint64_t max = maxFileId;
+    string fileName = std::to_string(max);
     //name use the integer from 1 ,every time plus 1
 
-    string allocatorCatalogPath = DATA_DIR + fielName;
+    string allocatorLeafGroupPath = DATA_DIR + fileName;
    // string freeListPath         = DATA_DIR + P_ALLOCATOR_FREE_LIST;
     ifstream allocatorLeafGroup(allocatorLeafGroupPath, ios::in|ios::binary);
     //ifstream freeListFile(freeListPath, ios::in|ios::binary);
