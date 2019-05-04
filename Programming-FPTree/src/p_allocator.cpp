@@ -43,7 +43,8 @@ PAllocator::PAllocator() {
         ifstream allocatorCatalog(allocatorCatalogPath, ios::in|ios::binary);
         ifstream freeListFile(freeListPath, ios::in|ios::binary);
          maxFileId=0;
-        pAllocator=nullptr;
+         freeNum=0;
+         pAllocator=nullptr;
     }
     this->initFilePmemAddr();
 }
