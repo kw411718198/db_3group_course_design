@@ -35,8 +35,9 @@ public:
     virtual bool remove(const Key& k, const int& index, InnerNode* const& parent, bool &ifDelete) = 0;
     virtual bool update(const Key& k, const Value& v) = 0;
     virtual Value find(const Key& k) = 0;
-
     virtual void printNode() = 0;
+    void setDegree(int d){degree = d;}
+    int getDegree(){return degree;}
 };
 
 // used for node's recursive insertion and split
@@ -147,6 +148,7 @@ public:
     void        insertNonFull(const Key& k, const Value& v);
     bool        remove(const Key& k, const int& index, InnerNode* const& parent, bool &ifDelete);
     bool        update(const Key& k, const Value& v);
+    bool        isfull(){int num = getTree()->getDegree();return num==n;}
     Value       find(const Key& k);
 
     // used by insert()
@@ -178,6 +180,7 @@ public:
     void       insert(Key k, Value v);
     bool       remove(Key k);
     bool       update(Key k, Value v);
+    int getDegree(){return degree;}
     Value      find(Key k);
     LeafNode*  findLeaf(Key K);
 
