@@ -300,7 +300,16 @@ LeafNode::~LeafNode() {
 KeyNode* LeafNode::insert(const Key& k, const Value& v) {
     KeyNode* newChild = NULL;
     // TODO
-    return newChild;
+    if(this->n >= this->degree){
+        return split();
+    }
+else
+{
+    /* code */
+    insertNonFull(k,v);
+   // return NULL;
+}
+
 }
 /*
     if (root != NULL) {
@@ -310,13 +319,30 @@ KeyNode* LeafNode::insert(const Key& k, const Value& v) {
 // insert into the leaf node that is assumed not full
 void LeafNode::insertNonFull(const Key& k, const Value& v) {
     // TODO 
-    t_KeyValue  kvalue = {k,v}; 
-    this->kv = &kvalue;
+    int i;
+    for(i=this->n;i>=1 && this->kv[i-1] > k;--i){
+        this->kv[i]=this->kv[i-1];
+    }
+    this->kv[i].k=k;
+    this->kv[i].v=v;
+    n++;
 }
 
 // split the leaf node
 KeyNode* LeafNode::split() {
     KeyNode* newChild = new KeyNode();
+
+        LeafNode* newNode;
+        this->n=degree/2;
+        newNode->n = n+1;
+        next=newNode;
+        prev=this;
+        int i;
+        for(i=0;i<degree+1;i++){
+            newNode->kv[i] = this->kv[i];
+        }
+        //how to get it's fatherNode?????
+        ((InnerNode*)this)->insertLeaf(*this);
     // TODO
     return newChild;
 }
