@@ -1,9 +1,19 @@
 #include"fptree/fptree.h"
 
 using namespace std;
-
+/*
+friend class FPTree;
+  bool   isRoot;     // judge whether the node is root
+    int    nKeys;      // amount of keys
+    int    nChild;     // amount of children
+    Key*   keys;       // max (2 * d + 1) keys
+    Node** childrens; 
+*/
 // Initial the new InnerNode
 InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
+    this->tree = t;
+    this->degree = d;
+    this->isRoot = _isRoot;  
     // TODO
 }
 
@@ -26,6 +36,13 @@ int InnerNode::findIndex(const Key& k) {
 // WARNING: can not insert when it has no entry
 void InnerNode::insertNonFull(const Key& k, Node* const& node) {
     // TODO
+    if(node->ifLeaf()){//if node is leaf
+        return;//we don't know the entry
+    }
+    else{
+        
+    }
+    
 }
 
 // insert func
@@ -197,10 +214,16 @@ KeyNode* LeafNode::insert(const Key& k, const Value& v) {
     // TODO
     return newChild;
 }
-
+/*
+    if (root != NULL) {
+        root->insert(k, v);
+    }
+*/
 // insert into the leaf node that is assumed not full
 void LeafNode::insertNonFull(const Key& k, const Value& v) {
-    // TODO
+    // TODO 
+    t_KeyValue  kvalue = {k,v}; 
+    this->kv = &kvalue;
 }
 
 // split the leaf node
@@ -337,6 +360,28 @@ Value FPTree::find(Key k) {
 // call the InnerNode and LeafNode print func to print the whole tree
 // TIPS: use Queue
 void FPTree::printTree() {
+    queue<Node*> queue0;
+    queue<Node*> queue1;
+    auto currentRank = &queue0;
+    auto nextRank = &queue1;
+    currentRank->push(root);
+    while(!currentRank->empty()){
+        cout<<"|";
+        while(!currentRank->empty()){
+            Node* currentNode = currentRank->front();
+            cout<<" "<<currentNode->printNode;
+            cout<<" | ";
+            if(!currentNode->isLeaf){
+                auto internalNode = static_cast<InnerNode*>(currentNode);
+                internalNode->printNode;
+            }
+            currentRank->pop();
+        }
+        cout<<endl;
+        auto tmp = currentRank;
+        currentRank = nextRank;
+        nextRank = tmp;
+    }
     // TODO
 }
 
