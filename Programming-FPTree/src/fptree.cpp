@@ -1,14 +1,7 @@
 #include"fptree/fptree.h"
 
 using namespace std;
-/*
-friend class FPTree;
-  bool   isRoot;     // judge whether the node is root
-    int    nKeys;      // amount of keys
-    int    nChild;     // amount of children
-    Key*   keys;       // max (2 * d + 1) keys
-    Node** childrens; 
-*/
+
 // Initial the new InnerNode
 InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
     this->tree = t;
@@ -20,13 +13,27 @@ InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
 // delete the InnerNode
 InnerNode::~InnerNode() {
     // TODO
+    delete keys;
+    delete []childrens;
 }
-
+/*
+    bool   isRoot;     // judge whether the node is root
+    int    nKeys;      // amount of keys
+    int    nChild;     // amount of children
+    Key*   keys;       // max (2 * d + 1) keys
+    Node** childrens;  // max (2 * d + 2) node pointers
+*/
 // binary search the first key in the innernode larger than input key
 int InnerNode::findIndex(const Key& k) {
     // TODO
+    //use key(int k) get the index
+    for(int i = 0;i< nChild;i++){
+        if(keys[i]>k)
+            return i;
+    }
     return 0;
 }
+
 
 // insert the node that is assumed not full
 // insert format:
@@ -36,14 +43,21 @@ int InnerNode::findIndex(const Key& k) {
 // WARNING: can not insert when it has no entry
 void InnerNode::insertNonFull(const Key& k, Node* const& node) {
     // TODO
-    if(node->ifLeaf()){//if node is leaf
-        return;//we don't know the entry
-    }
-    else{
-        
-    }
-    
+   int index = findIndex(k);
+   nChild++;
+   for(int i = nChild;i>index;i--){
+       keys[i] = keys[i-1];
+       childrens[keys[i]] = childrens[keys[i-1]] ;
+   }
+   keys[index] = k; 
+   childrens[keys[index]] = node;
 }
+/*
+typedef struct t_KeyNode {
+    Key key;
+    Node* node;
+} KeyNode;
+*/
 
 // insert func
 // return value is not NULL if split, returning the new child and a key to insert
@@ -161,6 +175,7 @@ Value InnerNode::find(const Key& k) {
 // get the children node of this InnerNode
 Node* InnerNode::getChild(const int& idx) {
     // TODO
+
     return NULL;
 }
 
@@ -295,6 +310,16 @@ int LeafNode::findFirstZero() {
 void LeafNode::persist() {
     // TODO
 }
+
+/*
+friend class FPTree;
+  bool   isRoot;     // judge whether the node is root
+    int    nKeys;      // amount of keys
+    int    nChild;     // amount of children
+    Key*   keys;       // max (2 * d + 1) keys
+    Node** childrens; 
+*/
+
 
 // call by the ~FPTree(), delete the whole tree
 void FPTree::recursiveDelete(Node* n) {
