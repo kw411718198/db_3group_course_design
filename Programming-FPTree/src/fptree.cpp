@@ -163,7 +163,18 @@ KeyNode* InnerNode::split() {
     KeyNode* newChild = new KeyNode();
     // right half entries of old node to the new node, others to the old node. 
     // TODO
-
+    int mid = this->nKeys/2;
+    int midkey = this->keys[mid];
+    InnerNode* right;
+    InnerNode* left=this; 
+    int i,j;
+    for(i=mid,j =0;i<this->nKeys;i++){
+        if(i==mid)continue;
+        right->keys[j]=this->keys[i];
+        right->childrens[j]=this->childrens[i];
+        right->nKeys++;
+    }
+    right->childrens[j]=this->childrens[i];
     return newChild;
 }
 
