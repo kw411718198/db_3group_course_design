@@ -65,14 +65,47 @@ KeyNode* InnerNode::insert(const Key& k, const Value& v) {
     KeyNode* newChild = NULL;
 
     // 1.insertion to the first leaf(only one leaf)
-    if (this->isRoot && this->nKeys == 0) {
+    if (this->isRoot && this->nKeys == 0) {//from 0 to 1 leaf-----the first node that's root
         // TODO
+        LeafNode* node = NULL;
+        node->degree = 1;
+        node->n = 1;
+        node->kv[0].k = k;
+        node->kv[0].v = v;
+        node->tree = this->tree;
+        newChild->key = k;
+        newChild->node = node;        
         return newChild;
-    }
-    
+    }  
     // 2.recursive insertion
     // TODO
-    return newChild;
+    if(this->ifLeaf)//if leafnodes
+    {
+        if(this->nChild > this->getKeyNum())
+        //still have space
+        {
+            return insert(k,v);
+        }
+        else
+        {
+            if(this->degree <= this->getChildNum())
+            //no space ,split to insert
+            {
+                return this->split();
+            }
+        }
+        
+    }
+    //not the leaf node reursively
+    else
+    {
+        /* code */
+        int index = findIndex(k);
+        Node* p=childrens[index];
+        p->insert(v,k);
+    }
+    //InnerNode* root = this->tree->getRoot();
+   // return newChild;
 }
 
 // ensure that the leaves inserted are ordered
@@ -83,15 +116,44 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
     // first and second leaf insertion into the tree
     if (this->isRoot && this->nKeys == 0) {
         // TODO
+        LeafNode* node = NULL;
+        node->degree = 1;
+        node->n = 1;
+        this->tree=leaf.node->getTree;    
+        newChild->node = leaf.node;   
         return newChild;
     }
     
     // recursive insert
     // Tip: please judge whether this InnerNode is full
-    // next level is not leaf, just insertLeaf
+    if(this->nChild >= this->getDegree())
+        {
+            //is full ,spilt
+            KeyNode* p= this->split();
+            //
+        }
     // TODO
-
+    for(int i=0;i<this->nChild;i++)
+    {
+        if(this->childrens[i]->ifLeaf)//is leaf
+        {
     // next level is leaf, insert to childrens array
+           // this->childrens[i]->
+           this->nChild++;
+           this->nKeys++;
+           this->childrens[1+i]=leaf.node;
+           this->keys[1+i]=leaf.key;
+           break;
+        }
+        else 
+        {
+    // next level is not leaf, just insertLeaf
+       //get the child innnernode??????
+        return insertLeaf(leaf);
+        }
+
+    }
+
     // TODO
 
     return newChild;
