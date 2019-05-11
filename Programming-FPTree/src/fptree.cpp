@@ -194,6 +194,12 @@ bool InnerNode::remove(const Key& k, const int& index, InnerNode* const& parent,
 // If the leftBro and rightBro exist, the rightBro is prior to be used
 void InnerNode::getBrother(const int& index, InnerNode* const& parent, InnerNode* &leftBro, InnerNode* &rightBro) {
     // TODO
+    if (index >= 1 && parent) {
+        leftBro = parent->childrens[index - 1];
+    }
+    if (index < parent->n - 1 && parent) {
+        rightBro = parent->childrens[index + 1];
+    }
 }
 
 // merge this node, its parent and left brother(parent is root)
