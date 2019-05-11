@@ -5,17 +5,45 @@ using namespace std;
 // Initial the new InnerNode
 InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
     // TODO
+    degree = 0;
+    this->isRoot = _isRoot;
+    keys = new Key[2*d+1];
+    childrens = new Node*[2*d+1];
+    this->tree = t;
 }
 
 // delete the InnerNode
 InnerNode::~InnerNode() {
     // TODO
+    tree = NULL;
+    delete keys;
+    delete childrens[];
+    degree = 0;
+
+}
+
+int BinarySearch(Key a[],const Key& x,int n)
+{
+    int left=0;
+    int right=n-1;
+    while(left<=right)
+    {
+        int middle=(left+right)/2;
+        if(a[middle]==x)
+            return middle;
+        if(x>=a[middle])
+            left=middle+1;
+        else
+            right=middle-1;
+    }
+    return -1;
 }
 
 // binary search the first key in the innernode larger than input key
 int InnerNode::findIndex(const Key& k) {
     // TODO
-    return 0;
+    int  temp = BinarySearch(keys,k,nKeys);
+    return temp;
 }
 
 // insert the node that is assumed not full
@@ -26,6 +54,9 @@ int InnerNode::findIndex(const Key& k) {
 // WARNING: can not insert when it has no entry
 void InnerNode::insertNonFull(const Key& k, Node* const& node) {
     // TODO
+    if(keys != NULL)
+    nkeys ++;
+
 }
 
 // insert func
