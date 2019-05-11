@@ -23,23 +23,29 @@ TEST(FPTreeTest, ReadLeaf) {
 }
 
 TEST(FPTreeTest, SingleInsert) {
+    removeFile();
     FPTree* tree = new FPTree(2);
     tree->insert(1, 100);
     LeafNode* leaf = (LeafNode*)(tree->getRoot()->getChild(0));
     EXPECT_NE(nullptr, leaf);
     if (!leaf) {
+        delete tree;
         return;
     }
     EXPECT_EQ(leaf->find(1), 100);
     EXPECT_EQ(leaf->getPPointer().fileId, 1);
     EXPECT_EQ(leaf->getPPointer().offset, LEAF_GROUP_HEAD + calLeafSize() * (LEAF_GROUP_AMOUNT - 1));
+    EXPECT_EQ(leaf->getBit(0), 1);
     LeafNode* t_leaf = new LeafNode(leaf->getPPointer(), NULL);
     EXPECT_EQ(t_leaf->getBit(0), 1);
     EXPECT_EQ(t_leaf->find(1), 100);
+    delete tree;
+    delete t_leaf;
     removeFile();
 }
 
 TEST(FPTreeTest, InsertOneLeaf) {
+    removeFile();
     LeafNode* l1 = new LeafNode(NULL);
     for (int i = 1; i <= LEAF_DEGREE; i++) {
         // TODO: error, the insertion did not persist
@@ -64,11 +70,17 @@ TEST(FPTreeTest, InsertOneLeaf) {
     LeafNode* t_l2 = new LeafNode(l2->getPPointer(), NULL);
     EXPECT_EQ(t_l11->find(1), 10);
     EXPECT_EQ(t_l2->find(LEAF_DEGREE + 1), 10 * (LEAF_DEGREE + 1));
+    delete l1;
+    delete l2;
+    delete t_l1;
+    delete t_l2;
+    delete t_l11;
 
     removeFile();
 }
 
 TEST(FPTreeTest, UpdateTest) {
+    removeFile();
     FPTree *tree = new FPTree(2);
     for (int i = 1; i <= LEAF_DEGREE; i++) {
         tree->insert(i, i * 100);
@@ -95,6 +107,7 @@ TEST(FPTreeTest, UpdateTest) {
 }
 
 TEST(FPTreeTest, BulkLoadingTwoLeaf) {
+    removeFile();
 
     PAllocator* pa = PAllocator::getAllocator();
 
@@ -113,11 +126,13 @@ TEST(FPTreeTest, BulkLoadingTwoLeaf) {
 
     FPTree* tree2 = new FPTree(1);
     EXPECT_EQ(tree2->find(1), 100);
-
+    delete tree2;
+    
     removeFile();
 }
 
 TEST(FPTreeTest, PersistLeaf) {
+    removeFile();
     LeafNode* leaf = new LeafNode(NULL);
     leaf->insertNonFull(1, 100);
     leaf->insertNonFull(2, 200);
@@ -129,11 +144,13 @@ TEST(FPTreeTest, PersistLeaf) {
     LeafNode* t_leaf = new LeafNode(p, NULL);
     EXPECT_EQ(t_leaf->find(1), 100);
     EXPECT_EQ(t_leaf->find(2), 200);
-
+    delete t_leaf;
+    
     removeFile();
 }
 
 TEST(FPTreeTest, BulkLoadingOneLeafGroup) {
+    removeFile();
     FPTree *tree = new FPTree(32);
     for (int i = 1; i < LEAF_DEGREE * 10; i++) {
         tree->insert(i, i * 10);
@@ -145,10 +162,12 @@ TEST(FPTreeTest, BulkLoadingOneLeafGroup) {
         EXPECT_EQ(t_tree->find(i), i * 10);
     }
 
+    delete t_tree;
     removeFile();
 }
 
 TEST(FPTreeTest, RemoveOneEntry) {
+    removeFile();
     FPTree* tree = new FPTree(4);
     for (int i = 1; i < 10; i++) {
         tree->insert(i, i * 10);
@@ -161,10 +180,12 @@ TEST(FPTreeTest, RemoveOneEntry) {
     uint64_t temp = MAX_VALUE;
     EXPECT_EQ(tree->find(1), temp);
     EXPECT_EQ(tree->find(2), 20);
+    delete tree();
     removeFile();
 }
 
 TEST(FPTreeTest, RemoveMultiplyEntries) {
+    removeFile();
     FPTree* tree = new FPTree(2);
     for (int i = 1; i <= LEAF_DEGREE * 2 * 6; i++) {
         tree->insert(i, i * 10);
@@ -174,6 +195,7 @@ TEST(FPTreeTest, RemoveMultiplyEntries) {
     int i = 1;
     for (int j = 0; j < LEAF_DEGREE; i++, j++) {
         tree->remove(i);
+        EXPECT_EQ(tree->find(i), MAX_VALUE);
     }
     tree->remove(i);
     i++;
@@ -202,10 +224,12 @@ TEST(FPTreeTest, RemoveMultiplyEntries) {
     tree->remove(i);
     i++;
     // tree->printTree();
+    delete tree;
     removeFile();
 }
 
 TEST(InneNodeTest, RedistributeRightTest) {
+    removeFile();
     FPTree* tree = new FPTree(2);
     for (int i = 1; i <= LEAF_DEGREE * (3 * 4 + 5); i++) {
         tree->insert(i, i);
@@ -219,10 +243,12 @@ TEST(InneNodeTest, RedistributeRightTest) {
     }
     EXPECT_EQ(node1->getChildNum(), 3);
     EXPECT_EQ(node2->getChildNum(), 4);
+    delete tree;
     removeFile();
 }
 
 TEST(InnerNodeTest, MergeTest) {
+    removeFile();
     FPTree* tree = new FPTree(2);
     for (int i = 1; i <= LEAF_DEGREE * (3 * 5); i++) {
         tree->insert(i, i);
@@ -237,5 +263,6 @@ TEST(InnerNodeTest, MergeTest) {
     // tree->printTree();
     EXPECT_EQ(node1->getChildNum(), 5);
     EXPECT_EQ(tree->getRoot()->getChildNum(), 4);
+    delete tree;
     removeFile();
 }
