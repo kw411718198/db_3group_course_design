@@ -4,17 +4,21 @@ using namespace std;
 
 // Initial the new InnerNode
 InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
-    this->tree = t;
-    this->degree = d;
-    this->isRoot = _isRoot;  
+    degree = 0;
+    this->isRoot = _isRoot;
+    key = new Key[2*d+1];
+    childrens = new Node*[2*d+1];
+    this-tree = t;
     // TODO
 }
 
 // delete the InnerNode
 InnerNode::~InnerNode() {
     // TODO
+    tree = NULL;
     delete keys;
     delete []childrens;
+    degree = 0;
 }
 /*
     bool   isRoot;     // judge whether the node is root
@@ -23,15 +27,30 @@ InnerNode::~InnerNode() {
     Key*   keys;       // max (2 * d + 1) keys
     Node** childrens;  // max (2 * d + 2) node pointers
 */
+
+int BinarySearch(Key a[],const Key& x,int n)
+{
+    int left=0;
+    int right=n-1;
+    while(left<=right)
+    {
+        int middle=(left+right)/2;
+        if(a[middle]==x)
+            return middle;
+        if(x>=a[middle])
+            left=middle+1;
+        else
+            right=middle-1;
+    }
+    return -1;
+}
+
 // binary search the first key in the innernode larger than input key
 int InnerNode::findIndex(const Key& k) {
     // TODO
     //use key(int k) get the index
-    for(int i = 0;i< nChild;i++){
-        if(keys[i]>k)
-            return i;
-    }
-    return 0;
+    int  temp = BinarySearch(keys,k,nKeys);
+    return temp;
 }
 
 
