@@ -168,7 +168,9 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
         {
     // next level is not leaf, just insertLeaf
        //get the child innnernode??????
-        return insertLeaf(leaf);
+            for (int i = 0; i < nChild; i ++) {
+                if (insertLeaf(leaf)) break;   
+            }
         }
 
     }
