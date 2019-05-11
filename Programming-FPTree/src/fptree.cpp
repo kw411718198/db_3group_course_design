@@ -148,7 +148,7 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
     if(this->nChild >= this->getDegree())
         {
             //is full ,spilt
-            KeyNode* p= this->split();
+            return this->split();
             //
         }
     // TODO
@@ -196,6 +196,21 @@ KeyNode* InnerNode::split() {
         right->nKeys++;
     }
     right->childrens[j]=this->childrens[i];
+	
+	//get the father node to return 
+	InnerNode* root = this->tree->getRoot();
+	int value = this->keys[nKeys-1];
+	
+	for(int i = 0;i< root->nKeys-1;i++){
+			int t = root->find(value);
+			if(value == root->keys[nKeys-1])){
+				newChild->node=root;
+				newChild->key = keys[nKeys-1];
+				break;
+			}
+			else
+				root = root->childrens[t];
+	}
     return newChild;
 }
 
@@ -305,16 +320,26 @@ void LeafNode::printNode() {
 // new a empty leaf and set the valuable of the LeafNode
 LeafNode::LeafNode(FPTree* t) {
     // TODO
-}
+	n=0;//t->getDegree();
+	t->insertLeaf(this);
+ }
 
 // reload the leaf with the specific Persistent Pointer
 // need to call the PAllocator
 LeafNode::LeafNode(PPointer p, FPTree* t) {
     // TODO
+	pPointer = p;
+	n=0;
+	t->insertLeaf(this);
+	/*next->prev = this->prev;
+	prev->next = this->next;// the address of previous leafnode   	
+	delete p;
+	t->remove(this);*/
 }
 
 LeafNode::~LeafNode() {
     // TODO
+	delete PPointer;
 }
 
 // insert an entry into the leaf, need to split it if it is full
@@ -363,6 +388,21 @@ KeyNode* LeafNode::split() {
             newNode->kv[i] = this->kv[i];
         }
         //how to get it's fatherNode?????
+		
+			//get the father node to return 
+		InnerNode* root = this->tree->getRoot();
+		int value = this->keys[nKeys-1];
+		
+		for(int i = 0;i< root->nKeys-1;i++){
+				int t = root->find(value);
+				if(value == root->keys[nKeys-1])){
+					newChild->node=root;
+					newChild->key = keys[nKeys-1];
+					break;
+				}
+				else
+					root = root->childrens[t];
+		}
         ((InnerNode*)this)->insertLeaf(*this);
     // TODO
     return newChild;
