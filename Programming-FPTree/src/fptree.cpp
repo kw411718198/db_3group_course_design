@@ -6,9 +6,9 @@ using namespace std;
 InnerNode::InnerNode(const int& d, FPTree* const& t, bool _isRoot) {
     degree = 0;
     this->isRoot = _isRoot;
-    key = new Key[2*d+1];
-    childrens = new Node*[2*d+1];
-    this-tree = t;
+    //key = new Key[2*d+1];
+    //childrens = new Node*[2*d+1];
+    //this-tree = t;
     // TODO
 }
 
@@ -27,7 +27,7 @@ InnerNode::~InnerNode() {
     Key*   keys;       // max (2 * d + 1) keys
     Node** childrens;  // max (2 * d + 2) node pointers
 */
-
+//stage 3
 int BinarySearch(Key a[],const Key& x,int n)
 {
     int left=0;
@@ -44,7 +44,7 @@ int BinarySearch(Key a[],const Key& x,int n)
     }
     return -1;
 }
-
+//stage 3
 // binary search the first key in the innernode larger than input key
 int InnerNode::findIndex(const Key& k) {
     // TODO
@@ -203,13 +203,13 @@ KeyNode* InnerNode::split() {
 	
 	for(int i = 0;i< root->nKeys-1;i++){
 			int t = root->find(value);
-			if(value == root->keys[nKeys-1])){
+			if(value == root->keys[nKeys-1]){
 				newChild->node=root;
 				newChild->key = keys[nKeys-1];
 				break;
 			}
-			else
-				root = root->childrens[t];
+			else//        InnerNode* n =  (InnerNode*)node;
+				root = (InnerNode*)root->childrens[t];
 	}
     return newChild;
 }
@@ -268,24 +268,76 @@ void InnerNode::mergeRight(InnerNode* const& rightBro, const Key& k) {
 void InnerNode::removeChild(const int& keyIdx, const int& childIdx) {
     // TODO
 }
-
+//stage 3
 // update the target entry, return true if the update succeed.
 bool InnerNode::update(const Key& k, const Value& v) {
     // TODO
+    return recursive_update(this->tree->getRoot,k,v);
+ //   return false;
+}
+bool InnerNode::recursive_update(Node* node ,const Key& k,const Value& v){
+    if(node == NULL){
+        return false;
+    }
+    else{
+        InnerNode* n =  (InnerNode*)node;
+        int keyIndex =  n->findIndex(k);//get the branch index by key k
+        if(n->childrens[keyIndex]->ifLeaf())//is a leaf node
+        {
+            return n->childrens[keyIndex]->update(k,v);
+        }
+        else
+        {
+            return recursive_update(n->childrens[keyIndex],k,v);//recursive to the children node to find the k
+        }
+    }
     return false;
 }
-
+//stage 3
 // find the target value with the search key, return MAX_VALUE if it fails.
 Value InnerNode::find(const Key& k) {
     // TODO
+    return recursive_search(this->tree->getRoot,k);
+
+//    return MAX_VALUE;
+}
+Value InnerNode::recursive_search(Node* node ,const Key& k){
+    if(node == NULL){
+        return false;
+    }
+    else{
+        InnerNode* n =  (InnerNode*)node;
+        int keyIndex =  n->findIndex(k);//get the branch index by key k
+        if(n->childrens[keyIndex]->ifLeaf())//is a leaf node
+        {
+            return n->childrens[keyIndex]->find(k);
+        }
+        else
+        {
+            return recursive_search(n->childrens[keyIndex],k);//recursive to the children node to find the k
+        }
+        
+    }
     return MAX_VALUE;
+}
+//if the leaf is the child of the innerNode return  true
+bool     InnerNode::ifChild(LeafNode* node){
+    int n = node->getNum();
+    int max_key = node->getKey[n-1];
+    int min_key = node->getKey[0];
+    int findIndex(const Key& k);
+    int max_index = this->findIndex(max_key);
+    int min_index = this->findIndex(min_key);
+    if(max_index || min_index)
+        return true;//if the side_key can be found in the keys[],which means the leafnode is the child of the node 
+    return false;
 }
 
 // get the children node of this InnerNode
 Node* InnerNode::getChild(const int& idx) {
     // TODO
-
-    return NULL;
+    return this->childrens[idx];
+//    return NULL;
 }
 
 // get the key of this InnerNode
@@ -321,7 +373,7 @@ void LeafNode::printNode() {
 LeafNode::LeafNode(FPTree* t) {
     // TODO
 	n=0;//t->getDegree();
-	t->insertLeaf(this);
+	//t->insertLeaf(this);
  }
 
 // reload the leaf with the specific Persistent Pointer
@@ -330,7 +382,7 @@ LeafNode::LeafNode(PPointer p, FPTree* t) {
     // TODO
 	pPointer = p;
 	n=0;
-	t->insertLeaf(this);
+	//t->insertLeaf(this);
 	/*next->prev = this->prev;
 	prev->next = this->next;// the address of previous leafnode   	
 	delete p;
@@ -339,7 +391,7 @@ LeafNode::LeafNode(PPointer p, FPTree* t) {
 
 LeafNode::~LeafNode() {
     // TODO
-	delete PPointer;
+//	delete PPointer;
 }
 
 // insert an entry into the leaf, need to split it if it is full
@@ -373,7 +425,18 @@ void LeafNode::insertNonFull(const Key& k, const Value& v) {
     this->kv[i].v=v;
     n++;
 }
-
+//ifChild(leafNode * node)
+KeyNode* LeafNode::getFatherNode(Node* root,KeyValue k){
+    //if(node)?????????????
+    InnerNode* node =  (InnerNode*)root;
+    if(root->ifLeaf())
+        return NULL;
+    else{
+        //if(node->ifChild(this))//how to use current class pointor to call another class'function ifChild(leafnode *node) 
+        //which means let node == current class pointor
+    }
+    return NULL;
+}
 // split the leaf node
 KeyNode* LeafNode::split() {
     KeyNode* newChild = new KeyNode();
@@ -391,29 +454,21 @@ KeyNode* LeafNode::split() {
 		
 			//get the father node to return 
 		InnerNode* root = this->tree->getRoot();
-		int value = this->keys[nKeys-1];
-		
-		for(int i = 0;i< root->nKeys-1;i++){
-				int t = root->find(value);
-				if(value == root->keys[nKeys-1])){
-					newChild->node=root;
-					newChild->key = keys[nKeys-1];
-					break;
-				}
-				else
-					root = root->childrens[t];
-		}
-        ((InnerNode*)this)->insertLeaf(*this);
+        LeafNode* node =  (LeafNode*)root;
+        int min_key = this->kv[0].k;//left key
+        int max_key = this->kv[n-1].k;//right key
+//????????????????????????
     // TODO
     return newChild;
 }
-
+//stage 2
 // use to find a mediant key and delete entries less then middle
 // called by the split func to generate new leaf-node
 // qsort first then find
 Key LeafNode::findSplitKey() {
     Key midKey = 0;
     // TODO
+//????????????????????
     return midKey;
 }
 
@@ -444,24 +499,37 @@ bool LeafNode::remove(const Key& k, const int& index, InnerNode* const& parent, 
     // TODO
     return ifRemove;
 }
-
+//stage 3
 // update the target entry
 // return TRUE if the update succeed
 bool LeafNode::update(const Key& k, const Value& v) {
     bool ifUpdate = false;
     // TODO
+    for(int i=0;i<n;i++){
+        if(this->kv[i].k = k){
+            this->kv[i].v = v;
+            ifUpdate = true;
+        }
+    }
     return ifUpdate;
 }
-
+//stage 3
 // if the entry can not be found, return the max Value
 Value LeafNode::find(const Key& k) {
     // TODO
+ //    KeyValue*  kv;             // the keyValue pairs array
+    for(int i = 0;i<n;i++){
+        if(this->kv[i].k == k)
+            return kv[i].v;
+    }
     return MAX_VALUE;
 }
-
+//stage 3
 // find the first empty slot
 int LeafNode::findFirstZero() {
     // TODO
+    if(this->degree >= n)
+        return n;
     return -1;
 }
 
