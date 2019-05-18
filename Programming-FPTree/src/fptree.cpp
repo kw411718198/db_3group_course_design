@@ -469,6 +469,7 @@ Key LeafNode::findSplitKey() {
     Key midKey = 0;
     // TODO
 //????????????????????
+
     return midKey;
 }
 
@@ -537,6 +538,7 @@ int LeafNode::findFirstZero() {
 // use PMDK
 void LeafNode::persist() {
     // TODO
+    PAllocator::getAllocator()->getLeafGroup(pPointer).flush_part(pmem);
 }
 
 /*
@@ -608,6 +610,7 @@ Value FPTree::find(Key k) {
     if (root != NULL) {
         return root->find(k);
     }
+    return MAX_VALUE;
 }
 
 // call the InnerNode and LeafNode print func to print the whole tree
@@ -644,5 +647,44 @@ void FPTree::printTree() {
 // need to call the PALlocator
 bool FPTree::bulkLoading() {
     // TODO
-    return false;
+    PPointer p = PAllocator::getAllocator()->getStartPointer();
+    if (!p.fileId) {
+        this->root = new InnerNode(degree, this, true);
+        return false;
+    }
+    LeafNode* tempLeaf = new LeafNode(p, this);
+    queue<Node*> q;
+    size_t length1 = 0, length2 = 0;
+    for (; tempLeaf; tempLeaf = tempLeaf->next) {
+        q.push(tempLeaf);
+        length1 ++;
+    }
+
+    while (!q.empty()) {
+        if (q.size() == 1 && !q.front().isLeaf()) break;
+        InnerNode* tempNode = new InnerNode(degree, this);
+        size_t size;
+        if (length1 < 2 * degree + 1) {
+            size = length1;
+        }
+        else {
+            size = degree;
+        }
+        for (size_t i = 0; i < size; i ++) {
+            Node* tempNode1 = q.front();
+            q.pop();
+            length1 --;
+            tempNode->insertLeaf(KeyNode{tempNode1->getMinKey(), tempNode1});
+        }
+        q.push(tempNode);
+        ++length2;
+        if (length1 == 0) {
+            length1 = length2;
+            length2 = 0;
+        }
+    }
+
+    this->root = q.front();
+    this->root->isRoot = true;
+    return true;
 }
