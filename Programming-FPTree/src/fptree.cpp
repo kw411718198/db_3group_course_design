@@ -30,17 +30,17 @@ InnerNode::~InnerNode() {
 //stage 3
 int BinarySearch(Key a[],const Key& x,int n)
 {
-    int left=0;
-    int right=n-1;
-    while(left<=right)
+    int left = 0;
+    int right = n - 1;
+    while(left <= right)
     {
-        int middle=(left+right)/2;
-        if(a[middle]==x)
+        int middle = (left+right)/2;
+        if(a[middle] == x)
             return middle;
-        if(x>=a[middle])
-            left=middle+1;
+        if(x >= a[middle])
+            left = middle + 1;
         else
-            right=middle-1;
+            right = middle - 1;
     }
     return -1;
 }
@@ -120,7 +120,7 @@ KeyNode* InnerNode::insert(const Key& k, const Value& v) {
     {
         /* code */
         int index = findIndex(k);
-        Node* p=childrens[index];
+        Node* p = childrens[index];
         p->insert(v,k);
     }
     //InnerNode* root = this->tree->getRoot();
@@ -152,7 +152,7 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
             //
         }
     // TODO
-    for(int i=0;i<this->nChild;i++)
+    for(int i = 0;i < this->nChild; i++)
     {
         if(this->childrens[i]->ifLeaf)//is leaf
         {
@@ -160,8 +160,8 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
            // this->childrens[i]->
            this->nChild++;
            this->nKeys++;
-           this->childrens[1+i]=leaf.node;
-           this->keys[1+i]=leaf.key;
+           this->childrens[1 + i] = leaf.node;
+           this->keys[1 + i] = leaf.key;
            break;
         }
         else 
@@ -187,28 +187,28 @@ KeyNode* InnerNode::split() {
     int mid = this->nKeys/2;
     int midkey = this->keys[mid];
     InnerNode* right;
-    InnerNode* left=this; 
+    InnerNode* left = this; 
     int i,j;
-    for(i=mid,j =0;i<this->nKeys;i++){
-        if(i==mid)continue;
-        right->keys[j]=this->keys[i];
-        right->childrens[j]=this->childrens[i];
+    for(i = mid,j = 0;i < this->nKeys;i++){
+        if(i == mid)continue;
+        right->keys[j] = this->keys[i];
+        right->childrens[j] = this->childrens[i];
         right->nKeys++;
     }
-    right->childrens[j]=this->childrens[i];
+    right->childrens[j] = this->childrens[i];
 	
 	//get the father node to return 
 	InnerNode* root = this->tree->getRoot();
 	int value = this->keys[nKeys-1];
 	
-	for(int i = 0;i< root->nKeys-1;i++){
+	for(int i = 0;i< root->nKeys - 1;i++){
 			int t = root->find(value);
 			if(value == root->keys[nKeys-1]){
-				newChild->node=root;
+				newChild->node = root;
 				newChild->key = keys[nKeys-1];
 				break;
 			}
-			else//        InnerNode* n =  (InnerNode*)node;
+			else//        InnerNode* n = (InnerNode*)node;
 				root = (InnerNode*)root->childrens[t];
 	}
     return newChild;
@@ -306,8 +306,8 @@ Value InnerNode::recursive_search(Node* node ,const Key& k){
         return false;
     }
     else{
-        InnerNode* n =  (InnerNode*)node;
-        int keyIndex =  n->findIndex(k);//get the branch index by key k
+        InnerNode* n = (InnerNode*)node;
+        int keyIndex = n->findIndex(k);//get the branch index by key k
         if(n->childrens[keyIndex]->ifLeaf())//is a leaf node
         {
             return n->childrens[keyIndex]->find(k);
@@ -418,11 +418,11 @@ else
 void LeafNode::insertNonFull(const Key& k, const Value& v) {
     // TODO 
     int i;
-    for(i=this->n;i>=1 && this->kv[i-1] > k;--i){
+    for(i = this->n;i >= 1 && this->kv[i - 1] > k; --i){
         this->kv[i]=this->kv[i-1];
     }
-    this->kv[i].k=k;
-    this->kv[i].v=v;
+    this->kv[i].k = k;
+    this->kv[i].v = v;
     n++;
 }
 //ifChild(leafNode * node)
@@ -442,12 +442,12 @@ KeyNode* LeafNode::split() {
     KeyNode* newChild = new KeyNode();
 
         LeafNode* newNode;
-        this->n=degree/2;
-        newNode->n = n+1;
-        next=newNode;
-        prev=this;
+        this->n = degree / 2;
+        newNode->n = n + 1;
+        next = newNode;
+        prev = this;
         int i;
-        for(i=0;i<degree+1;i++){
+        for(i = 0;i < degree + 1; i++){
             newNode->kv[i] = this->kv[i];
         }
         //how to get it's fatherNode?????
@@ -506,7 +506,7 @@ bool LeafNode::remove(const Key& k, const int& index, InnerNode* const& parent, 
 bool LeafNode::update(const Key& k, const Value& v) {
     bool ifUpdate = false;
     // TODO
-    for(int i=0;i<n;i++){
+    for(int i = 0;i < n; i++){
         if(this->kv[i].k = k){
             this->kv[i].v = v;
             ifUpdate = true;
@@ -519,7 +519,7 @@ bool LeafNode::update(const Key& k, const Value& v) {
 Value LeafNode::find(const Key& k) {
     // TODO
  //    KeyValue*  kv;             // the keyValue pairs array
-    for(int i = 0;i<n;i++){
+    for(int i = 0;i < n; i++){
         if(this->kv[i].k == k)
             return kv[i].v;
     }
