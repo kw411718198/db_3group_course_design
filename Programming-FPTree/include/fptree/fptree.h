@@ -182,6 +182,7 @@ public:
     LeafNode*  findLeaf(Key K);
 
     InnerNode* getRoot();
+	uint64_t  getDegree(){return degree};
     void       changeRoot(InnerNode* newRoot);
     void       printTree();
 
