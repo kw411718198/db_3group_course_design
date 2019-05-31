@@ -792,7 +792,6 @@ bool FPTree::bulkLoading() {
             length2 = 0;
         }
     }
-
     this->root = q.front();
     this->root->isRoot = true;
     return true;
