@@ -221,52 +221,161 @@ bool InnerNode::remove(const Key& k, const int& index, InnerNode* const& parent,
     bool ifRemove = false;
     // only have one leaf
     // TODO
+    int index = findIndex(k);
+    if(index == 0)
+    return false;
     
+    bool ifRemove = childrens[index-1]->remove(k,index-1,this,ifDelete);
+    if(ifDelete){
+        removeChild(index-1,index-1);
+        if(isRoot && nChild == 1 &&(!childrens[0]->ifLeaf())){
+            tree->changeRoot(dynamic_cast<InnerNode*>(childrens[0]));
+            tree->getRoot()->isRoot = true;
+            ifDelete = true;
+            return ifRemove;
+        }  
+
+
+    if(nChild <degree +1 && !isRoot){
+        InnerNode *leftBro = nullptr,*rightBro = nullptr;
+        getBrother(index,parent,leftBro,rightBro);
+
+        if(parent->isRoot && parent->getChildNum() == 2){
+            if(leftBro){
+                mergeParentLeft(parent,leftBro);
+                ifDelete = true;
+            }
+            else if (rightBro){
+                mergeParentRight(parent,rightBro);
+                ifDelete = true;
+            }
+            return ifRemove;
+        }
+        if(rightBro){
+            mergeRight(rightBro,k);
+            parent->keys[index+1] = rightBro->keys[0];
+            ifDelete = true;
+            return ifRemove;
+        }
+        if(leftBro){
+            mergeLeft(leftBro,k);
+            parent->keys[index-1] = rightBro->keys[0];
+            ifDelete = true;
+            return ifRemove;
+        }
+        if(rightBro && rightBro->nChild > degree +1){
+            redistributeRight(index,rightBro,parent);
+            ifRemove = false;
+            return ifRemove;
+        }
+         if(leftBro && leftBro->nChild > degree + 1 ){
+            redistributeLeft(index,leftBro,parent);
+            ifRemove = false;
+            return ifRemove;
+        }
+        return false;
+        }
+        ifDelete = false;
+        return ifRemove;
+    }
     // recursive remove
     // TODO
+    keys[0] = (dynamic_cast<InnerNode*>(childrens[0]))->keys[0]; 
     return ifRemove;
 }
 
 // If the leftBro and rightBro exist, the rightBro is prior to be used
 void InnerNode::getBrother(const int& index, InnerNode* const& parent, InnerNode* &leftBro, InnerNode* &rightBro) {
     // TODO
+    if(parent){
+        if(index>0){
+            leftBro = dynamic_cast<InnerNode*>(parent->childrens[index-1]);
+        }
+        if(index+1<(int)parent->nChild){
+            rightBro = dynamic_cast<InnerNode*>(parent->childrens[index+1]);
+        }
+    }
+
 }
 
 // merge this node, its parent and left brother(parent is root)
 void InnerNode::mergeParentLeft(InnerNode* const& parent, InnerNode* const& leftBro) {
     // TODO
+    memmove(leftBro->childrens + leftBro->nChild,childrens,sizeof(Node*) * nChild);
+    memmove(leftBro->keys +leftBro->nChild,keys,sizeof(Key) * nChild);
+    leftBro->nChild += nChild;
+    tree->changeRoot(leftBro);
+    leftBro->isRoot = true;
 }
 
 // merge this node, its parent and right brother(parent is root)
 void InnerNode::mergeParentRight(InnerNode* const& parent, InnerNode* const& rightBro) {
     // TODO
+    memmove(rightBro->childrens+this->nChild,rightBro->childrens,sizeof(Node*)*rightBro->nChild);
+    memmove(rightBro->keys +this->nChild,rightBro->keys,sizeof(Key)*rightBro->nChild);
+    memmove(rightBro->childrens,childrens,sizeof(Node*) * nChild);
+    memmove(rightBro->keys,keys,sizeof(Key) * nChild);
+    rightBro->nChild += nChild;
+    tree->changeRoot(rightBro);
+    rightBro->isRoot = true;
 }
 
 // this node and its left brother redistribute
 // the left has more entries
 void InnerNode::redistributeLeft(const int& index, InnerNode* const& leftBro, InnerNode* const& parent) {
     // TODO
+    memmove(childrens+1,childrens,sizeof(Node*) * nChild);
+    memmove(keys+1,keys,sizeof(Key)*nChild);
+    leftBro->nChild-=1;
+    keys[0] = leftBro->keys[leftBro->nChild];
+    childrens[0] = leftBro->childrens[leftBro->nChild];
+    nChild++;
+
+    parent->keys[index] = this->keys[0];
 }
 
 // this node and its right brother redistribute
 // the right has more entries
 void InnerNode::redistributeRight(const int& index, InnerNode* const& rightBro, InnerNode* const& parent) {
     // TODO
+    memmove(rightBro->childrens,rightBro->childrens+1,sizeof(Node*) * rightBro->nChild);
+    memmove(rightBro->keys,rightBro->keys+1,sizeof(Key)*rightBro->nChild);
+    rightBro->nChild-=1;
+    keys[nChild] = rightBro->keys[0];
+    childrens[nChild] = rightBro->childrens[0];
+    nChild++;
+
+    parent->keys[index+1] = this->keys[0];
 }
 
 // merge all entries to its left bro, delete this node after merging.
 void InnerNode::mergeLeft(InnerNode* const& leftBro, const Key& k) {
     // TODO
+    memmove(leftBro->childrens +leftBro->nChild,childrens,sizeof(Node*) * nChild);
+    memmove(leftBro->keys + leftBro->nChild,keys,sizeof(Key)* nChild);
+    leftBro->nChild*=2;
+    return;
 }
 
 // merge all entries to its right bro, delete this node after merging.
 void InnerNode::mergeRight(InnerNode* const& rightBro, const Key& k) {
     // TODO
+    memmove(rightBro->childrens + nChild,rightBro->childrens,sizeof(Node*)*rightBro->nChild);
+    memmove(rightBro->keys+nChild,rightBro->keys,sizeof(Key)*rightBro->nChild);
+    memmove(rightBro->childrens,childrens,sizeof(Node*)*nChild);
+    memmove(rightBro->keys,keys,sizeof(Key*)*nChild);
+    rightBro->nChild*=2;
+    return;
 }
 
 // remove a children from the current node, used by remove func
 void InnerNode::removeChild(const int& keyIdx, const int& childIdx) {
     // TODO
+    delete this->childrens[childIdx];
+    nChild--;
+    memmove(keys+childIdx,keys+childIdx+1,sizeof(Key*)*(nChild-childIdx));
+    memmove(childrens+childIdx,childrens+childIdx+1,sizeof(Node*)*(nChild-childIdx));
+    return;
 }
 //stage 3
 // update the target entry, return true if the update succeed.
