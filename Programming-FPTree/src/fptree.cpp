@@ -71,12 +71,6 @@ void InnerNode::insertNonFull(const Key& k, Node* const& node) {
    keys[index] = k; 
    childrens[keys[index]] = node;
 }
-/*
-typedef struct t_KeyNode {
-    Key key;
-    Node* node;
-} KeyNode;
-*/
 
 // insert func
 // return value is not NULL if split, returning the new child and a key to insert
