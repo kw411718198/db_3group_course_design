@@ -30,6 +30,7 @@ public:
 
     bool    ifLeaf() { return isLeaf; }
 
+
     virtual KeyNode* insert(const Key& k, const Value& v) = 0;
     virtual KeyNode* split() = 0;
     virtual bool remove(const Key& k, const int& index, InnerNode* const& parent, bool &ifDelete) = 0;
@@ -88,13 +89,17 @@ private:
 public:
 
     InnerNode(const int& d, FPTree* const& tree, bool _ifRoot = false);
+    int getDegree(){return this->degree;}
     ~InnerNode();
 
     KeyNode* insert(const Key& k, const Value& v);
+    bool     ifChild(LeafNode* node);
     void     insertNonFull(const Key& k, Node* const& node);
+    Value     recursive_search(Node* node ,const Key& k);
     KeyNode* insertLeaf(const KeyNode& leaf);
     bool     remove(const Key& k, const int& index, InnerNode* const& parent, bool &ifDelete);
     bool     update(const Key& k, const Value& v);
+    bool     recursive_update(Node* node ,const Key& k,const Value& v);
     Value    find(const Key& k);
     
     KeyNode* split();
@@ -148,7 +153,7 @@ public:
     bool        remove(const Key& k, const int& index, InnerNode* const& parent, bool &ifDelete);
     bool        update(const Key& k, const Value& v);
     Value       find(const Key& k);
-
+    int         getNum(){return n;}
     // used by insert()
     KeyNode*    split();
     Key         findSplitKey();
@@ -156,6 +161,7 @@ public:
     void        printNode();
 
     int         findFirstZero();
+    KeyNode*    getFatherNode(Node* root,KeyValue k);
     int         getBit(const int& idx);
     Key         getKey(const int& idx);
     Value       getValue(const int& idx);
