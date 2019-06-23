@@ -92,7 +92,7 @@ KeyNode* InnerNode::insert(const Key& k, const Value& v) {
     }  
     // 2.recursive insertion
     // TODO
-    if(this->ifLeaf)//if leafnodes
+    if(this->ifLeaf())//if leafnodes
     {
         if(this->nChild > this->getKeyNum())
         //still have space
@@ -132,7 +132,7 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
         LeafNode* node = NULL;
         node->degree = 1;
         node->n = 1;
-        this->tree=leaf.node->getTree;    
+        this->tree=leaf.node->getTree();    
         newChild->node = leaf.node;   
         return newChild;
     }
@@ -148,7 +148,7 @@ KeyNode* InnerNode::insertLeaf(const KeyNode& leaf) {
     // TODO
     for(int i = 0;i < this->nChild; i++)
     {
-        if(this->childrens[i]->ifLeaf)//is leaf
+        if(this->childrens[i]->ifLeaf())//is leaf
         {
     // next level is leaf, insert to childrens array
            // this->childrens[i]->
@@ -215,13 +215,16 @@ bool InnerNode::remove(const Key& k, const int& index, InnerNode* const& parent,
     bool ifRemove = false;
     // only have one leaf
     // TODO
-    int index = findIndex(k);
-    if(index == 0)
+    int _index = findIndex(k);
+    if(_index == 0)
     return false;
     
-    bool ifRemove = childrens[index-1]->remove(k,index-1,this,ifDelete);
+    ifRemove = childrens[_index-1]->remove(k,_index-1,this,ifDelete);
     if(ifDelete){
-        removeChild(index-1,index-1);
+        if(_index)
+        removeChild(_index-1,_index);
+        else removeChild(_index,_index);
+        
         if(isRoot && nChild == 1 &&(!childrens[0]->ifLeaf())){
             tree->changeRoot(dynamic_cast<InnerNode*>(childrens[0]));
             tree->getRoot()->isRoot = true;
@@ -375,7 +378,7 @@ void InnerNode::removeChild(const int& keyIdx, const int& childIdx) {
 // update the target entry, return true if the update succeed.
 bool InnerNode::update(const Key& k, const Value& v) {
     // TODO
-    return recursive_update(this->tree->getRoot,k,v);
+    return recursive_update(this->tree->getRoot(),k,v);
  //   return false;
 }
 bool InnerNode::recursive_update(Node* node ,const Key& k,const Value& v){
@@ -400,7 +403,7 @@ bool InnerNode::recursive_update(Node* node ,const Key& k,const Value& v){
 // find the target value with the search key, return MAX_VALUE if it fails.
 Value InnerNode::find(const Key& k) {
     // TODO
-    return recursive_search(this->tree->getRoot,k);
+    return recursive_search(this->tree->getRoot(),k);
 
 //    return MAX_VALUE;
 }
@@ -426,8 +429,8 @@ Value InnerNode::recursive_search(Node* node ,const Key& k){
 //if the leaf is the child of the innerNode return  true
 bool     InnerNode::ifChild(LeafNode* node){
     int n = node->getNum();
-    int max_key = node->getKey[n-1];
-    int min_key = node->getKey[0];
+    int max_key = node->getKey(n-1);
+    int min_key = node->getKey(0);
     int findIndex(const Key& k);
     int max_index = this->findIndex(max_key);
     int min_index = this->findIndex(min_key);
@@ -520,12 +523,21 @@ else
 // insert into the leaf node that is assumed not full
 void LeafNode::insertNonFull(const Key& k, const Value& v) {
     // TODO 
-    int i;
-    for(i = this->n;i >= 1 && this->kv[i - 1] > k; --i){
-        this->kv[i]=this->kv[i-1];
-    }
-    this->kv[i].k = k;
-    this->kv[i].v = v;
+    //KeyValue kv
+    uint64_t index;
+
+	for(uint64_t i = 0; i < bitmapSize; i ++){
+		for(uint64_t j = 0; j < 8; j ++) {
+			if(!((bitmap[i] >> j) & 1)) {
+				index =  (j + i * 8);
+			}
+		}
+	}
+    index = -1;
+    uint64_t _index = 1 << (index%8);
+    bitmap[index/8] |= _index;
+    fingerprints[index] = keyHash(k);
+    kv[index] = {k,v};
     n++;
 }
 //ifChild(leafNode * node)
@@ -641,7 +653,7 @@ int LeafNode::findFirstZero() {
 // use PMDK
 void LeafNode::persist() {
     // TODO
-    PAllocator::getAllocator()->getLeafGroup(pPointer).flush_part(pmem);
+    pmem_msync(pmem_addr,calLeafSize());
 }
 
 /*
@@ -719,29 +731,20 @@ Value FPTree::find(Key k) {
 // call the InnerNode and LeafNode print func to print the whole tree
 // TIPS: use Queue
 void FPTree::printTree() {
-    queue<Node*> queue0;
-    queue<Node*> queue1;
-    auto currentRank = &queue0;
-    auto nextRank = &queue1;
-    currentRank->push(root);
-    while(!currentRank->empty()){
-        cout<<"|";
-        while(!currentRank->empty()){
-            Node* currentNode = currentRank->front();
-            cout<<" "<<currentNode->printNode;
-            cout<<" | ";
-            if(!currentNode->isLeaf){
-                auto internalNode = static_cast<InnerNode*>(currentNode);
-                internalNode->printNode;
-            }
-            currentRank->pop();
-        }
-        cout<<endl;
-        auto tmp = currentRank;
-        currentRank = nextRank;
-        nextRank = tmp;
-    }
     // TODO
+    queue<Node*> print;
+    print.push(root);
+    while(!print.empty()){
+        Node* toPrint = print.front();
+        print.pop();
+        toPrint->printNode();
+        if(!toPrint->isLeaf){
+            for(int i = 0; i < ((InnerNode*)toPrint)->nChild; i ++ ){
+                print.push(((InnerNode*)toPrint)->childrens[i]);
+            }
+        }
+        cout << endl;
+    }
 }
 
 // bulkLoading the leaf files and reload the tree
@@ -764,7 +767,7 @@ bool FPTree::bulkLoading() {
     }
 
     while (!q.empty()) {
-        if (q.size() == 1 && !q.front().isLeaf()) break;
+        if (q.size() == 1 ) break;
         InnerNode* tempNode = new InnerNode(degree, this);
         size_t size;
         if (length1 < 2 * degree + 1) {
