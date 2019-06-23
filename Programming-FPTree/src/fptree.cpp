@@ -760,37 +760,33 @@ bool FPTree::bulkLoading() {
     }
     LeafNode* tempLeaf = new LeafNode(p, this);
     queue<Node*> q;
-    size_t length1 = 0, length2 = 0;
-    for (; tempLeaf; tempLeaf = tempLeaf->next) {
+    size_t length1;
+    for (length1 = 0; tempLeaf; tempLeaf = tempLeaf->next) {
         q.push(tempLeaf);
         length1 ++;
     }
 
-    while (!q.empty()) {
-        if (q.size() == 1 ) break;
+    while (q.front()->ifLeaf()) {
+        if (q.size() == 0 ||  q.size() == 1) break;
         InnerNode* tempNode = new InnerNode(degree, this);
         size_t size;
-        if (length1 < 2 * degree + 1) {
+        if (length1 < 2 * degree + 1) 
             size = length1;
+        else size = degree;
+        vector<LeafNode*> leafNodes;
+        for(uint64_t i = 0;i<leafNodes.size();i++){
+            root->insertLeaf({leafNodes[i]->getKey(0),leafNodes[i]});
         }
-        else {
-            size = degree;
-        }
-        for (size_t i = 0; i < size; i ++) {
-            Node* tempNode1 = q.front();
-            q.pop();
-            length1 --;
-            tempNode->insertLeaf(KeyNode{tempNode1->getMinKey(), tempNode1});
-        }
+
         q.push(tempNode);
-        ++length2;
-        if (length1 == 0) {
+        size_t length2 = 1;
+        if (!length1) {
             length1 = length2;
             length2 = 0;
         }
     }
 
-    this->root = q.front();
+    this->root = dynamic_cast<InnerNode*>(q.front());
     this->root->isRoot = true;
     return true;
 }
